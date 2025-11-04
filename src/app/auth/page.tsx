@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -13,7 +13,7 @@ import {
 import { useAuthStore } from "@/store/auth";
 import toast from "react-hot-toast";
 
-export default function AuthPage() {
+function AuthPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setGithubToken } = useAuthStore();
@@ -246,5 +246,19 @@ export default function AuthPage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center bg-black">
+          <div className="w-8 h-8 border-2 border-white border-t-transparent animate-spin" />
+        </main>
+      }
+    >
+      <AuthPageContent />
+    </Suspense>
   );
 }
