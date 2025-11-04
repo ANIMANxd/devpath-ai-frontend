@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    {
+      "extensionId": "bradlc.vscode-tailwindcss",
+      "reason": "Tailwind CSS IntelliSense for auto-completion"
+    },
+    {
+      "extensionId": "dbaeumer.vscode-eslint",
+      "reason": "ESLint for code quality"
+    },
+    {
+      "extensionId": "esbenp.prettier-vscode",
+      "reason": "Prettier for code formatting"
+    },
+    {
+      "extensionId": "formulahendry.auto-rename-tag",
+      "reason": "Auto rename paired HTML/JSX tags"
+    }
+  ]
+}
