@@ -79,7 +79,7 @@ export default function CareerTrackSection({
         </div>
 
         <p className="text-white/60 mb-6 leading-relaxed">
-          Based on your current skills, we'll create a personalized learning
+          Based on your current skills, we will create a personalized learning
           path to help you reach your career goals.
         </p>
 

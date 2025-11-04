@@ -6,10 +6,8 @@ import {
   Github,
   TrendingUp,
   Target,
-  Code2,
   Rocket,
   CheckCircle2,
-  ChevronRight,
   Zap,
   Shield,
   Users,
@@ -205,8 +203,8 @@ export default function ExplorePage() {
               Ready to Transform Your Career?
             </h2>
             <p className="text-lg text-white/60 mb-10 max-w-2xl mx-auto">
-              Join thousands of developers who've unlocked their potential with
-              AI-powered insights.
+              Join thousands of developers who have unlocked their potential
+              with AI-powered insights.
             </p>
             <button
               onClick={() => router.push("/auth")}

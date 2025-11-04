@@ -3,15 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Github,
-  LogOut,
-  Terminal,
-  Code2,
-  TrendingUp,
-  Target,
-  ChevronRight,
-} from "lucide-react";
+import { LogOut, Terminal, Code2, TrendingUp, Target } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { apiClient } from "@/lib/api";
 import { FullReport } from "@/types/api";

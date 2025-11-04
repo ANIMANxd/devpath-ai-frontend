@@ -190,8 +190,8 @@ export default function HomePage() {
           </h2>
 
           <p className="text-lg text-white/60 mb-10 max-w-2xl mx-auto">
-            Join 12,000+ developers who've unlocked their career potential with
-            AI-powered insights.
+            Join 12,000+ developers who have unlocked their career potential
+            with AI-powered insights.
           </p>
 
           <motion.button

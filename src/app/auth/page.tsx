@@ -26,6 +26,7 @@ export default function AuthPage() {
     if (code) {
       handleOAuthCallback(code);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const handleOAuthCallback = async (code: string) => {
@@ -82,8 +83,6 @@ export default function AuthPage() {
       setGithubToken(token);
       toast.success("Token saved!");
       setTimeout(() => router.push("/dashboard"), 1000);
-    } catch (error) {
-      toast.error("Failed to save token");
     } finally {
       setIsLoading(false);
     }
