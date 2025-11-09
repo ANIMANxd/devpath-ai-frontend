@@ -269,7 +269,7 @@ const steps = [
     icon: Github,
     title: "Connect GitHub",
     description:
-      "Securely link your GitHub account with a personal access token.",
+      "Authenticate via GitHub OAuth to securely analyze your profile.",
   },
   {
     icon: Terminal,

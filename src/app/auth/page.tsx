@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 function AuthPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setGithubToken } = useAuthStore();
+  const { setJwtToken } = useAuthStore();
   const [token, setToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
@@ -43,7 +43,8 @@ function AuthPageContent() {
       }
       const data = await response.json();
       if (!data.access_token) throw new Error("No access token received");
-      setGithubToken(data.access_token);
+      // Backend returns application JWT token
+      setJwtToken(data.access_token);
       toast.success("Successfully authenticated!");
       setTimeout(() => router.push("/dashboard"), 1000);
     } catch (error) {
@@ -75,12 +76,13 @@ function AuthPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token.trim()) {
-      toast.error("Please enter your GitHub token");
+      toast.error("Please enter your application token");
       return;
     }
     setIsLoading(true);
     try {
-      setGithubToken(token);
+      // Treat manual input as an application JWT token
+      setJwtToken(token);
       toast.success("Token saved!");
       setTimeout(() => router.push("/dashboard"), 1000);
     } finally {
@@ -173,13 +175,13 @@ function AuthPageContent() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold mb-4 text-white/70">
-                    Enter GitHub Token
+                    Enter Application Token (JWT)
                   </label>
                   <input
                     type="password"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                    placeholder="eyJhbGciOi... (JWT token)"
                     className="w-full px-4 py-3 md:py-4 bg-black border border-white/30 focus:outline-none focus:border-white/50 mono text-sm md:text-base disabled:opacity-50 transition-all duration-300"
                     disabled={isLoading}
                   />
@@ -221,7 +223,7 @@ function AuthPageContent() {
                 </p>
                 <p className="text-xs leading-relaxed text-white/60">
                   {showManualInput
-                    ? "Generate at: GitHub → Settings → Developer settings. Required scopes: repo"
+                    ? "Authenticate via OAuth above to receive your application JWT token. Manual entry is for advanced use only."
                     : "We only read your public repositories. We never modify your code."}
                 </p>
               </div>

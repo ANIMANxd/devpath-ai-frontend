@@ -1,4 +1,4 @@
-// API Client for DevPath AI Backend
+// API Client for DevPath AI Backend v3.0.0
 
 import {
   FullReport,
@@ -7,23 +7,45 @@ import {
   GapAnalysis,
   MarketMatchRequest,
   ApiError,
+  ReportHistoryItem,
 } from "@/types/api";
+import { useAuthStore } from "@/store/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 class ApiClient {
   private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
     try {
+      // Read JWT token from auth store (persisted)
+      const jwtToken = useAuthStore.getState().jwtToken;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...((options?.headers as Record<string, string>) || {}),
+      };
+
+      if (jwtToken) {
+        headers["Authorization"] = `Bearer ${jwtToken}`;
+      }
+
       const res = await fetch(`${API_BASE}${path}`, {
         credentials: "omit",
-        headers: {
-          "Content-Type": "application/json",
-          ...(options?.headers || {}),
-        },
+        headers,
         ...options,
       });
 
       if (!res.ok) {
+        // Handle 401 Unauthorized - token expired or invalid
+        if (res.status === 401) {
+          useAuthStore.getState().clearJwtToken();
+          throw new Error("Your session has expired. Please log in again.");
+        }
+
+        // Handle 204 No Content responses
+        if (res.status === 204) {
+          return undefined as T;
+        }
+
         const errorText = await res.text();
         let errorMessage = `API Error ${res.status}: ${res.statusText}`;
 
@@ -35,6 +57,11 @@ class ApiClient {
         }
 
         throw new Error(errorMessage);
+      }
+
+      // Handle 204 No Content success responses
+      if (res.status === 204) {
+        return undefined as T;
       }
 
       return (await res.json()) as T;
@@ -55,14 +82,11 @@ class ApiClient {
 
   /**
    * Full analysis - comprehensive GitHub profile analysis
-   * @param githubToken - GitHub OAuth token (Bearer token)
+   * (v3: uses application JWT stored in auth store)
    */
-  async fullAnalysis(githubToken: string): Promise<FullReport> {
-    return this.fetch("/full-analysis", {
+  async analyze(): Promise<FullReport> {
+    return this.fetch("/analyze", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${githubToken}`,
-      },
     });
   }
 
@@ -85,6 +109,37 @@ class ApiClient {
     return this.fetch("/market-match", {
       method: "POST",
       body: JSON.stringify(request),
+    });
+  }
+
+  /**
+   * Get report history - list of saved analysis reports
+   * @returns Array of report history items (up to 3 most recent)
+   */
+  async getReportHistory(): Promise<ReportHistoryItem[]> {
+    return this.fetch("/reports/", {
+      method: "GET",
+    });
+  }
+
+  /**
+   * Get specific report - retrieve full analysis report by ID
+   * @param reportId - ID of the report to retrieve
+   * @returns Full report data
+   */
+  async getReport(reportId: number): Promise<FullReport> {
+    return this.fetch(`/reports/${reportId}`, {
+      method: "GET",
+    });
+  }
+
+  /**
+   * Delete report - remove a saved analysis report
+   * @param reportId - ID of the report to delete
+   */
+  async deleteReport(reportId: number): Promise<void> {
+    return this.fetch(`/reports/${reportId}`, {
+      method: "DELETE",
     });
   }
 }

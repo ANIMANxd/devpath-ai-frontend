@@ -1,5 +1,12 @@
-// API Types - Based on DevPath AI Backend v2.4.0
+// API Types - Based on DevPath AI Backend v3.0.0
 
+// Authentication
+export interface Token {
+  access_token: string;
+  token_type: string;
+}
+
+// Core analysis models
 export interface RepoReport {
   name: string;
   skills: string[];
@@ -29,6 +36,13 @@ export interface FullReport {
   suggested_projects: GeneratedProject[];
 }
 
+// Report history
+export interface ReportHistoryItem {
+  id: number;
+  created_at: string; // ISO 8601 datetime string
+}
+
+// Career track
 export interface CareerTrackRequest {
   current_skills: string[];
   target_domain: string;
@@ -44,6 +58,7 @@ export interface CareerTrack {
   capstone_project: GeneratedProject;
 }
 
+// Market match
 export interface MarketMatchRequest {
   user_skills: string[];
   job_title: string;

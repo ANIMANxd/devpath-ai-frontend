@@ -13,9 +13,19 @@ import {
   Instagram,
   Linkedin,
 } from "lucide-react";
+import { useAuthStore } from "@/store/auth";
 
 export default function HomePage() {
   const router = useRouter();
+  const { jwtToken } = useAuthStore();
+
+  const handleGetStarted = () => {
+    if (jwtToken) {
+      router.push("/dashboard");
+    } else {
+      router.push("/auth");
+    }
+  };
 
   return (
     <main className="relative min-h-screen bg-black overflow-hidden">
@@ -54,7 +64,7 @@ export default function HomePage() {
               Dashboard
             </button>
             <button
-              onClick={() => router.push("/auth")}
+              onClick={handleGetStarted}
               className="px-3 md:px-5 py-2 md:py-2.5 border border-white bg-white text-black hover:bg-white/90 font-semibold text-xs md:text-sm tracking-wide flex items-center gap-1.5 md:gap-2 transition-all duration-300"
             >
               <Github className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -104,7 +114,7 @@ export default function HomePage() {
             <motion.button
               whileHover={{ x: 4, y: -4 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => router.push("/auth")}
+              onClick={handleGetStarted}
               className="px-8 py-4 border-2 border-white bg-white text-black font-bold text-base flex items-center justify-between hover:bg-white/90 transition-all duration-300 group"
             >
               <span className="flex items-center gap-3">
