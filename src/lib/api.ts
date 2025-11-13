@@ -28,11 +28,19 @@ class ApiClient {
         headers["Authorization"] = `Bearer ${jwtToken}`;
       }
 
-      const res = await fetch(`${API_BASE}${path}`, {
-        credentials: "omit",
-        headers,
-        ...options,
-      });
+      let res: Response;
+      try {
+        res = await fetch(`${API_BASE}${path}`, {
+          credentials: "omit",
+          headers,
+          ...options,
+        });
+      } catch (networkError) {
+        // Network error - backend unreachable
+        throw new Error(
+          `Cannot connect to backend at ${API_BASE}. Please check your internet connection and backend configuration.`
+        );
+      }
 
       if (!res.ok) {
         // Handle 401 Unauthorized - token expired or invalid
@@ -46,14 +54,31 @@ class ApiClient {
           return undefined as T;
         }
 
-        const errorText = await res.text();
+        // Check Content-Type to determine if response is JSON or HTML
+        const contentType = res.headers.get("content-type");
+        const isJson = contentType?.includes("application/json");
+
         let errorMessage = `API Error ${res.status}: ${res.statusText}`;
 
-        try {
-          const errorJson = JSON.parse(errorText) as ApiError;
-          errorMessage = errorJson.detail || errorJson.message || errorMessage;
-        } catch {
-          errorMessage = errorText || errorMessage;
+        if (isJson) {
+          try {
+            const errorJson = await res.json() as ApiError;
+            errorMessage = errorJson.detail || errorJson.message || errorMessage;
+          } catch {
+            errorMessage = `Failed to parse error response`;
+          }
+        } else {
+          // Response is likely HTML (nginx error page, 404, etc.)
+          // Don't expose raw HTML to user
+          if (res.status === 404) {
+            errorMessage = "API endpoint not found. Please check your backend configuration.";
+          } else if (res.status === 502 || res.status === 503) {
+            errorMessage = "Backend service is unavailable. Please try again later.";
+          } else if (res.status === 500) {
+            errorMessage = "Internal server error. Please contact support.";
+          } else {
+            errorMessage = `Server error (${res.status}). Please try again later.`;
+          }
         }
 
         throw new Error(errorMessage);
