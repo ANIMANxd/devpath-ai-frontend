@@ -35,7 +35,7 @@ class ApiClient {
           headers,
           ...options,
         });
-      } catch (networkError) {
+      } catch {
         // Network error - backend unreachable
         throw new Error(
           `Cannot connect to backend at ${API_BASE}. Please check your internet connection and backend configuration.`
