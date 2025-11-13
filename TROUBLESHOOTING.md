@@ -7,6 +7,7 @@ Quick guide to diagnose and fix common production issues in DevPath AI Frontend.
 ## 🔍 Issue: "Analysis Failed" with HTML Content
 
 ### Symptoms:
+
 - Error message shows raw HTML (DOCTYPE, meta tags, scripts)
 - Analysis fails immediately
 - Error contains nginx or server HTML
@@ -14,7 +15,9 @@ Quick guide to diagnose and fix common production issues in DevPath AI Frontend.
 ### Root Causes:
 
 #### 1. Backend Not Running
+
 **Diagnosis:**
+
 ```bash
 # SSH into your backend server
 curl http://localhost:8000/
@@ -22,6 +25,7 @@ curl http://localhost:8000/
 ```
 
 **Fix:**
+
 ```bash
 # Check if backend is running
 pm2 status
@@ -35,7 +39,9 @@ sudo systemctl restart your-backend-service
 ```
 
 #### 2. Wrong API URL in Environment Variables
+
 **Diagnosis:**
+
 ```bash
 # On frontend server
 cat .env.local
@@ -43,6 +49,7 @@ cat .env.local
 ```
 
 **Fix:**
+
 ```bash
 # Update .env.local with correct backend URL
 nano .env.local
@@ -58,14 +65,17 @@ pm2 restart devpath-ai-frontend
 ```
 
 #### 3. CORS Configuration
+
 **Diagnosis:**
 Check browser console (F12) for CORS errors:
+
 ```
-Access to fetch at 'http://backend-url' from origin 'http://frontend-url' 
+Access to fetch at 'http://backend-url' from origin 'http://frontend-url'
 has been blocked by CORS policy
 ```
 
 **Fix (Backend):**
+
 ```python
 # In backend main.py or app.py
 app.add_middleware(
@@ -84,7 +94,9 @@ app.add_middleware(
 Restart backend after changes.
 
 #### 4. Nginx Reverse Proxy Issues
+
 **Diagnosis:**
+
 ```bash
 # Check nginx error logs
 sudo tail -50 /var/log/nginx/error.log
@@ -94,6 +106,7 @@ sudo nginx -t
 ```
 
 **Fix:**
+
 ```bash
 # Edit nginx config
 sudo nano /etc/nginx/sites-available/devpath-ai-backend
@@ -110,7 +123,9 @@ sudo systemctl reload nginx
 ```
 
 #### 5. Backend Port Not Listening
+
 **Diagnosis:**
+
 ```bash
 # Check what's listening on port 8000
 sudo lsof -i :8000
@@ -119,6 +134,7 @@ sudo netstat -tlnp | grep 8000
 ```
 
 **Fix:**
+
 ```bash
 # If nothing is listening, backend isn't running
 pm2 start your-backend-process
@@ -133,6 +149,7 @@ pm2 start your-backend-process
 ## 🔒 Issue: "Your session has expired" (401 Errors)
 
 ### Symptoms:
+
 - Gets logged out unexpectedly
 - "Please log in again" message
 - Works temporarily after re-login
@@ -140,11 +157,14 @@ pm2 start your-backend-process
 ### Root Causes:
 
 #### 1. JWT Token Expired
+
 **Diagnosis:**
+
 - Check token expiration time in backend logs
 - Typical JWT expiration: 7 days
 
 **Fix (Backend):**
+
 ```python
 # Increase JWT expiration time
 ACCESS_TOKEN_EXPIRE_MINUTES = 10080  # 7 days
@@ -155,22 +175,28 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 43200  # 30 days
 ```
 
 #### 2. Backend Restarted (In-Memory Token Store)
+
 **Diagnosis:**
+
 - All users logged out after backend restart
 - Backend using in-memory session storage
 
 **Fix:**
+
 - Ensure backend uses database for session storage
 - Users will need to re-login once
 
 #### 3. Token Validation Issues
+
 **Diagnosis:**
+
 ```bash
 # Check backend logs for JWT validation errors
 pm2 logs devpath-ai-backend --err
 ```
 
 **Fix:**
+
 - Ensure `SECRET_KEY` hasn't changed in backend
 - Verify `ALGORITHM` setting (usually "HS256")
 
@@ -179,6 +205,7 @@ pm2 logs devpath-ai-backend --err
 ## 🌐 Issue: Cannot Connect to Backend
 
 ### Symptoms:
+
 - "Cannot connect to backend at..."
 - Network errors in console
 - Timeout errors
@@ -186,7 +213,9 @@ pm2 logs devpath-ai-backend --err
 ### Root Causes:
 
 #### 1. Backend Server Down
+
 **Diagnosis:**
+
 ```bash
 # SSH into backend server
 systemctl status your-backend-service
@@ -194,6 +223,7 @@ pm2 status
 ```
 
 **Fix:**
+
 ```bash
 pm2 restart devpath-ai-backend
 # or
@@ -201,7 +231,9 @@ sudo systemctl restart your-backend-service
 ```
 
 #### 2. Firewall Blocking Requests
+
 **Diagnosis:**
+
 ```bash
 # Check firewall rules
 sudo ufw status
@@ -211,6 +243,7 @@ curl http://backend-ip:8000/
 ```
 
 **Fix:**
+
 ```bash
 # On backend server, allow port 8000
 sudo ufw allow 8000/tcp
@@ -220,7 +253,9 @@ sudo ufw reload
 ```
 
 #### 3. DNS Not Resolving
+
 **Diagnosis:**
+
 ```bash
 # Test DNS resolution
 nslookup your-backend-domain.com
@@ -230,12 +265,15 @@ curl http://backend-ip:8000/
 ```
 
 **Fix:**
+
 - Update DNS A record to point to correct IP
 - Wait 5-30 minutes for DNS propagation
 - Use IP address temporarily in .env.local
 
 #### 4. SSL Certificate Issues
+
 **Diagnosis:**
+
 ```bash
 # Test HTTPS endpoint
 curl -v https://your-backend-domain.com/
@@ -244,6 +282,7 @@ curl -v https://your-backend-domain.com/
 ```
 
 **Fix:**
+
 ```bash
 # Renew SSL certificate
 sudo certbot renew --force-renewal
@@ -255,6 +294,7 @@ sudo systemctl reload nginx
 ## ⚡ Issue: Slow Analysis or Timeouts
 
 ### Symptoms:
+
 - Analysis takes >2 minutes
 - Timeout errors
 - "Request failed" messages
@@ -262,7 +302,9 @@ sudo systemctl reload nginx
 ### Root Causes:
 
 #### 1. Backend Resource Constraints
+
 **Diagnosis:**
+
 ```bash
 # Check CPU/Memory usage
 top
@@ -271,30 +313,37 @@ free -m
 ```
 
 **Fix:**
+
 - Upgrade EC2 instance (t3.micro → t3.small)
 - Optimize backend code
 - Add caching layer
 
 #### 2. GitHub API Rate Limiting
+
 **Diagnosis:**
+
 ```bash
 # Check backend logs for rate limit errors
 pm2 logs devpath-ai-backend | grep -i "rate limit"
 ```
 
 **Fix:**
+
 - Use authenticated GitHub requests (increases limit to 5000/hour)
 - Implement request caching
 - Use GitHub PAT with higher limits
 
 #### 3. Nginx Timeout Settings Too Low
+
 **Diagnosis:**
+
 ```bash
 # Check nginx config
 sudo nano /etc/nginx/sites-available/devpath-ai-frontend
 ```
 
 **Fix:**
+
 ```nginx
 # Increase timeouts in nginx config
 proxy_connect_timeout 300s;
@@ -311,6 +360,7 @@ sudo systemctl reload nginx
 ## 🗄️ Issue: Report History Not Loading
 
 ### Symptoms:
+
 - History tab shows "No reports yet"
 - Reports not persisting
 - "Failed to load report history"
@@ -318,7 +368,9 @@ sudo systemctl reload nginx
 ### Root Causes:
 
 #### 1. Database Not Connected
+
 **Diagnosis:**
+
 ```bash
 # Check backend logs
 pm2 logs devpath-ai-backend | grep -i "database"
@@ -330,6 +382,7 @@ sudo systemctl status mysql
 ```
 
 **Fix:**
+
 ```bash
 # Restart database
 sudo systemctl restart postgresql
@@ -339,7 +392,9 @@ sudo systemctl restart postgresql
 ```
 
 #### 2. Database Permissions
+
 **Diagnosis:**
+
 ```bash
 # Connect to database
 psql -U your_db_user -d your_db_name
@@ -349,6 +404,7 @@ psql -U your_db_user -d your_db_name
 ```
 
 **Fix:**
+
 ```sql
 -- Ensure reports table exists
 CREATE TABLE IF NOT EXISTS reports (
@@ -367,6 +423,7 @@ GRANT ALL PRIVILEGES ON TABLE reports TO your_db_user;
 ## 🔧 Quick Diagnostic Commands
 
 ### Frontend Server:
+
 ```bash
 # Check application status
 pm2 status
@@ -388,6 +445,7 @@ sudo tail -50 /var/log/nginx/error.log
 ```
 
 ### Backend Server:
+
 ```bash
 # Check application status
 pm2 status
@@ -407,15 +465,18 @@ sudo lsof -i :8000
 ```
 
 ### Browser (F12 Console):
+
 ```javascript
 // Check stored JWT
-localStorage.getItem('auth-storage')
+localStorage.getItem("auth-storage");
 
 // Check API base URL
-console.log(process.env.NEXT_PUBLIC_API_BASE)
+console.log(process.env.NEXT_PUBLIC_API_BASE);
 
 // Test API call manually
-fetch('http://your-backend-url/').then(r => r.json()).then(console.log)
+fetch("http://your-backend-url/")
+  .then((r) => r.json())
+  .then(console.log);
 ```
 
 ---
@@ -425,6 +486,7 @@ fetch('http://your-backend-url/').then(r => r.json()).then(console.log)
 ### Complete Reset:
 
 #### Frontend:
+
 ```bash
 cd /var/www/devpath-ai-frontend
 
@@ -446,6 +508,7 @@ pm2 logs devpath-ai-frontend
 ```
 
 #### Backend:
+
 ```bash
 cd /path/to/backend
 
@@ -480,11 +543,13 @@ sudo logwatch --detail high --service all --range today --format text
 ### Setup Uptime Monitoring:
 
 Use services like:
+
 - **UptimeRobot** (free)
 - **Pingdom** (free tier)
 - **StatusCake** (free tier)
 
 Monitor:
+
 - Frontend URL: `https://your-frontend.com`
 - Backend health: `https://your-backend.com/health`
 
@@ -513,6 +578,7 @@ fi
 ```
 
 Add to crontab:
+
 ```bash
 crontab -e
 
@@ -531,6 +597,7 @@ crontab -e
 5. **Check environment variables**: Ensure all are correct
 
 **Common Fix Order:**
+
 1. Restart backend
 2. Restart frontend
 3. Check/update .env.local
@@ -541,6 +608,7 @@ crontab -e
 ---
 
 **Still stuck?** Create an issue on GitHub with:
+
 - Error message (full text)
 - Browser console logs
 - PM2 logs output

@@ -62,8 +62,9 @@ class ApiClient {
 
         if (isJson) {
           try {
-            const errorJson = await res.json() as ApiError;
-            errorMessage = errorJson.detail || errorJson.message || errorMessage;
+            const errorJson = (await res.json()) as ApiError;
+            errorMessage =
+              errorJson.detail || errorJson.message || errorMessage;
           } catch {
             errorMessage = `Failed to parse error response`;
           }
@@ -71,9 +72,11 @@ class ApiClient {
           // Response is likely HTML (nginx error page, 404, etc.)
           // Don't expose raw HTML to user
           if (res.status === 404) {
-            errorMessage = "API endpoint not found. Please check your backend configuration.";
+            errorMessage =
+              "API endpoint not found. Please check your backend configuration.";
           } else if (res.status === 502 || res.status === 503) {
-            errorMessage = "Backend service is unavailable. Please try again later.";
+            errorMessage =
+              "Backend service is unavailable. Please try again later.";
           } else if (res.status === 500) {
             errorMessage = "Internal server error. Please contact support.";
           } else {
